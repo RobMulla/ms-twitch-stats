@@ -45,3 +45,20 @@ def process_stream_sessions(raw_dir='../data/raw/Stream Session*.csv',
     if save_dir is not None:
         ss[keep_cols].to_csv('../data/processed/StreamSession.csv', index=False)
     return ss[keep_cols]
+
+
+def process_channel_analytics(raw_dir='../data/raw/Channel Analytics*.csv'):
+    ca_files = glob(raw_dir)
+
+    ds = []
+    for file in ca_files:
+        fn = file.split('/')[-1]
+        d = pd.read_csv(file)
+        ds.append(d)
+    ca = pd.concat(ds)
+
+    ca['Date'] = pd.to_datetime(ca['Date'])
+    assert (ca['Date'].value_counts() > 1).sum() == 0
+    ca.columns = ['_'.join(c.split(' ')) for c in ca.columns]
+    ca = ca.reset_index(drop=True)
+    return ca
