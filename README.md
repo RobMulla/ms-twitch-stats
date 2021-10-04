@@ -1,7 +1,7 @@
 # ms-twitch-stats
 Medallion Stallion Twitch Stats Analysis.
 
-[twich stream link here](https://dashboard.twitch.tv/u/medallionstallion_)
+[twich stream link here](https://www.twitch.tv/medallionstallion_)
 
 ## Overview
 
