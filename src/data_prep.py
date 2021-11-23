@@ -5,10 +5,11 @@ def process_stream_sessions(raw_dir='../data/raw/Stream Session*.csv',
                             save_dir=None):
     ss_files = glob(raw_dir)
     ds = []
-    for file in ss_files:
+    for s_id, file in enumerate(ss_files):
         fn = file.split('/')[-1]
         d = pd.read_csv(file)
         d['filename'] = fn
+        d['session_id'] = s_id
         ds.append(d)
     ss = pd.concat(ds)
     ss = ss.reset_index(drop=True)
@@ -41,24 +42,25 @@ def process_stream_sessions(raw_dir='../data/raw/Stream Session*.csv',
                  'Live Views', 'New Followers',
                  'Chatters', 'Chat Messages',
                  'Ad Breaks', 'Subscriptions',
-                 'Clips Created', 'All Clip Views']
+                 'Clips Created', 'All Clip Views', 'session_id']
     if save_dir is not None:
         ss[keep_cols].to_csv('../data/processed/StreamSession.csv', index=False)
     return ss[keep_cols]
 
 
-def process_channel_analytics(raw_dir='../data/raw/Channel Analytics*.csv'):
+def process_channel_analytics(raw_dir="../data/raw/Channel Analytics*.csv"):
     ca_files = glob(raw_dir)
 
     ds = []
     for file in ca_files:
-        fn = file.split('/')[-1]
+        fn = file.split("/")[-1]
         d = pd.read_csv(file)
         ds.append(d)
     ca = pd.concat(ds)
-
-    ca['Date'] = pd.to_datetime(ca['Date'])
-    assert (ca['Date'].value_counts() > 1).sum() == 0
-    ca.columns = ['_'.join(c.split(' ')) for c in ca.columns]
+    ca["Date"] = pd.to_datetime(ca["Date"])
+    ca = ca.loc[~ca.duplicated(subset=["Date"], keep="first")].reset_index(drop=True)
+    assert (ca["Date"].value_counts() > 1).sum() == 0
+    ca.columns = ["_".join(c.split(" ")) for c in ca.columns]
     ca = ca.reset_index(drop=True)
+    ca["streamed"] = ca["Minutes_Streamed"] > 0
     return ca
